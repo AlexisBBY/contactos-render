@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lista de Contactos</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Minimal / Formal style (coherente con el formulario) -->
+  <style>
+    :root{
+      --ink:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --paper:#ffffff;
+      --bg:#f8fafc;
+      --focus:rgba(15,23,42,.10);
+      --radius:14px;
+    }
+
+    body{
+      background: var(--bg);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue", sans-serif;
+      letter-spacing: .2px;
+    }
+
+    .shell{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 42px 16px;
+    }
+
+    .panel{
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(2,6,23,.06);
+      overflow: hidden;
+    }
+
+    .panel-header{
+      padding: 22px 22px 16px 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .title-wrap h1{
+      font-size: 1.2rem;
+      margin: 0;
+      font-weight: 700;
+    }
+
+    .title-wrap p{
+      margin: 6px 0 0 0;
+      font-size: .92rem;
+      color: var(--muted);
+    }
+
+    .btn-min{
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 650;
+      letter-spacing: .2px;
+    }
+
+    .btn-ghost{
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink);
+    }
+    .btn-ghost:hover{
+      border-color: var(--ink);
+      background: rgba(15,23,42,.03);
+    }
+
+    .btn-solid{
+      background: var(--ink);
+      border: 1px solid var(--ink);
+      color: #fff;
+      min-width: 170px;
+    }
+    .btn-solid:hover{ opacity: .92; }
+
+    .panel-body{
+      padding: 22px;
+    }
+
+    /* Filtros */
+    .filters{
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .form-label{
+      font-size: .85rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .form-control{
+      border-radius: 12px;
+      border-color: var(--line);
+      padding: 10px 12px;
+      background: #fff;
+    }
+    .form-control:focus{
+      border-color: var(--ink);
+      box-shadow: 0 0 0 .25rem var(--focus);
+    }
+
+    /* Tabla */
+    .table-wrap{
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .table{
+      margin: 0;
+    }
+
+    .table thead th{
+      background: #fff !important;
+      color: var(--muted) !important;
+      font-size: .85rem;
+      font-weight: 700;
+      border-bottom: 1px solid var(--line) !important;
+      padding: 14px 14px;
+      white-space: nowrap;
+    }
+
+    .table tbody td{
+      padding: 14px 14px;
+      border-top: 1px solid var(--line);
+      vertical-align: middle;
+      color: var(--ink);
+    }
+
+    .table-hover tbody tr:hover{
+      background: rgba(15,23,42,.02);
+    }
+
+    .avatar{
+      width: 40px;
+      height: 40px;
+      border-radius: 999px;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .pill-muted{
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: .85rem;
+      height: 28px;
+    }
+
+    /* Acciones */
+    .btn-sm-min{
+      border-radius: 12px;
+      padding: 8px 10px;
+      font-weight: 650;
+      letter-spacing: .2px;
+      font-size: .85rem;
+      line-height: 1.1;
+    }
+
+    .btn-outline-ink{
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: transparent;
+    }
+    .btn-outline-ink:hover{
+      border-color: var(--ink);
+      background: rgba(15,23,42,.03);
+    }
+
+    .btn-outline-danger-min{
+      border: 1px solid rgba(220,38,38,.35);
+      color: rgb(185,28,28);
+      background: transparent;
+    }
+    .btn-outline-danger-min:hover{
+      border-color: rgb(185,28,28);
+      background: rgba(220,38,38,.06);
+    }
+
+    /* Footer / paginación */
+    .panel-footer{
+      padding: 14px 18px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .meta{
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    .pagination .page-link{
+      border-radius: 12px !important;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      padding: 8px 12px;
+    }
+    .pagination .page-item.active .page-link{
+      background: var(--ink);
+      border-color: var(--ink);
+      color: #fff;
+    }
+    .pagination .page-item.disabled .page-link{
+      color: var(--muted);
+      background: #fff;
+      opacity: .7;
+    }
+
+    @media (max-width: 576px){
+      .panel-header{ flex-direction: column; align-items: stretch; }
+      .btn-solid{ width: 100%; }
+      .panel-body{ padding: 16px; }
+      .panel-footer{ padding: 12px 14px; }
+      .table thead th, .table tbody td{ padding: 12px 12px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="title-wrap">
+          <h1>Lista de contactos</h1>
+          <p>Filtra, revisa y administra tus registros.</p>
+        </div>
+
+        <a class="btn btn-min btn-solid" th:href="@{/Home/Formulario}">Nuevo contacto</a>
+      </div>
+
+      <div class="panel-body">
+
+        <!-- Filtros -->
+        <form class="filters" th:action="@{/Home/Lista}" method="get">
+          <div class="row g-2">
+            <div class="col-md-3">
+              <label class="form-label">Nombre</label>
+              <input class="form-control" name="nombre" th:value="${nombre}" placeholder="Ej. Juan">
+            </div>
+
+            <div class="col-md-3">
+              <label class="form-label">Correo</label>
+              <input class="form-control" name="correo" th:value="${correo}" placeholder="correo@ejemplo.com">
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">Teléfono</label>
+              <input class="form-control" name="telefono" th:value="${telefono}" placeholder="10 dígitos">
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">C.P.</label>
+              <input class="form-control" name="cp" th:value="${cp}" placeholder="Ej. 43990">
+            </div>
+
+            <div class="col-md-2">
+              <label class="form-label">Fecha</label>
+              <input class="form-control" type="date" name="fecha" th:value="${fecha}">
+            </div>
+
+            <div class="col-12 d-flex gap-2 mt-2 flex-wrap">
+              <button class="btn btn-min btn-solid" type="submit" style="min-width: 140px;">Buscar</button>
+              <a class="btn btn-min btn-ghost" th:href="@{/Home/Lista}">Limpiar</a>
+            </div>
+          </div>
+        </form>
+
+        <!-- Tabla -->
+        <div class="table-wrap">
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Foto</th>
+                  <th>Nombre</th>
+                  <th>Apellidos</th>
+                  <th>Correo</th>
+                  <th>Teléfono</th>
+                  <th>C.P.</th>
+                  <th>Fecha</th>
+                  <th style="width: 200px;">Acciones</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <!-- SIN REGISTROS -->
+                <tr th:if="${contactos.totalElements == 0}">
+                  <td colspan="8" class="text-center py-5">
+                    <div class="meta">No hay contactos registrados todavía.</div>
+                  </td>
+                </tr>
+
+                <!-- CON REGISTROS -->
+                <tr th:if="${contactos.totalElements > 0}" th:each="c : ${contactos.content}">
+                  <td>
+                    <img class="avatar" th:if="${c.fotoBase64 != null}"
+                         th:src="'data:image/*;base64,' + ${c.fotoBase64}" />
+                    <span th:if="${c.fotoBase64 == null}" class="pill-muted">—</span>
+                  </td>
+
+                  <td th:text="${c.nombre}"></td>
+                  <td th:text="${c.apellidos}"></td>
+                  <td th:text="${c.correo}"></td>
+                  <td th:text="${c.telefono}"></td>
+                  <td th:text="${c.cp}"></td>
+                  <td th:text="${c.fechaNacimiento}"></td>
+
+                  <td>
+                    <div class="d-flex gap-2 flex-wrap">
+                      <a class="btn btn-sm-min btn-outline-ink"
+                         th:href="@{/Home/Formulario/{id}(id=${c.id})}">
+                        Editar
+                      </a>
+
+                      <form th:action="@{/Home/Eliminar/{id}(id=${c.id})}"
+                            method="post"
+                            onsubmit="return confirm('¿Seguro que deseas eliminar este contacto?');">
+                        <button class="btn btn-sm-min btn-outline-danger-min" type="submit">
+                          Eliminar
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Footer / Paginación -->
+          <div class="panel-footer">
+            <div class="meta">
+              Total: <span th:text="${contactos.totalElements}"></span>
+              <span th:if="${contactos.totalPages > 0}">
+                | Página <span th:text="${contactos.number + 1}"></span> de <span th:text="${contactos.totalPages}"></span>
+              </span>
+            </div>
+
+            <nav th:if="${contactos.totalPages > 1}">
+              <ul class="pagination mb-0 gap-2">
+
+                <li class="page-item" th:classappend="${contactos.first} ? 'disabled'">
+                  <a class="page-link"
+                     th:href="@{/Home/Lista(page=0,nombre=${nombre},correo=${correo},telefono=${telefono},cp=${cp},fecha=${fecha})}">
+                    « Primero
+                  </a>
+                </li>
+
+                <li class="page-item" th:classappend="${contactos.first} ? 'disabled'">
+                  <a class="page-link"
+                     th:href="@{/Home/Lista(page=${contactos.number - 1},nombre=${nombre},correo=${correo},telefono=${telefono},cp=${cp},fecha=${fecha})}">
+                    ‹
+                  </a>
+                </li>
+
+                <li class="page-item"
+                    th:each="i : ${#numbers.sequence(0, contactos.totalPages - 1)}"
+                    th:classappend="${i == contactos.number} ? 'active'">
+                  <a class="page-link"
+                     th:text="${i + 1}"
+                     th:href="@{/Home/Lista(page=${i},nombre=${nombre},correo=${correo},telefono=${telefono},cp=${cp},fecha=${fecha})}">
+                  </a>
+                </li>
+
+                <li class="page-item" th:classappend="${contactos.last} ? 'disabled'">
+                  <a class="page-link"
+                     th:href="@{/Home/Lista(page=${contactos.number + 1},nombre=${nombre},correo=${correo},telefono=${telefono},cp=${cp},fecha=${fecha})}">
+                    ›
+                  </a>
+                </li>
+
+                <li class="page-item" th:classappend="${contactos.last} ? 'disabled'">
+                  <a class="page-link"
+                     th:href="@{/Home/Lista(page=${contactos.totalPages - 1},nombre=${nombre},correo=${correo},telefono=${telefono},cp=${cp},fecha=${fecha})}">
+                    Último »
+                  </a>
+                </li>
+
+              </ul>
+            </nav>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

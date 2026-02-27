@@ -19,14 +19,29 @@ class ContactoService(private val repo: ContactoRepository) {
         telefono: String,
         cp: String,
         fecha: LocalDate?,
-        page: Int
+        page: Int,
+        size: Int
     ): Page<Contacto> {
-        val pageable = PageRequest.of(page.coerceAtLeast(0), 5, Sort.by("id").descending())
-        return repo.buscar(nombre.trim(), correo.trim(), telefono.trim(), cp.trim(), fecha, pageable)
+
+        fun norm(s: String): String? = s.trim().takeIf { it.isNotEmpty() }
+
+        val pageable = PageRequest.of(
+            page.coerceAtLeast(0),
+            size.coerceIn(1, 50),
+            Sort.by(Sort.Direction.DESC, "id")
+        )
+
+        return repo.buscar(
+            norm(nombre),
+            norm(correo),
+            norm(telefono),
+            norm(cp),
+            fecha,
+            pageable
+        )
     }
 
     fun guardar(contacto: Contacto, foto: MultipartFile?) {
-        // ✅ Si viene foto, la guardamos; si no, NO tronamos
         if (foto != null && !foto.isEmpty) {
             contacto.fotoBase64 = Base64.getEncoder().encodeToString(foto.bytes)
         }

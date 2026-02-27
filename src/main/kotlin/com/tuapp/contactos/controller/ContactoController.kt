@@ -23,15 +23,21 @@ class ContactoController(private val service: ContactoService) {
         @RequestParam(defaultValue = "") telefono: String,
         @RequestParam(defaultValue = "") cp: String,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) fecha: LocalDate?,
-        @RequestParam(defaultValue = "0") page: Int
+        @RequestParam(defaultValue = "0") page: Int,
+        @RequestParam(defaultValue = "10") size: Int
     ): String {
-        val pagina = service.buscar(nombre, correo, telefono, cp, fecha, page)
+
+        val pagina = service.buscar(nombre, correo, telefono, cp, fecha, page, size)
+
         model.addAttribute("contactos", pagina)
         model.addAttribute("nombre", nombre)
         model.addAttribute("correo", correo)
         model.addAttribute("telefono", telefono)
         model.addAttribute("cp", cp)
         model.addAttribute("fecha", fecha)
+        model.addAttribute("page", page)
+        model.addAttribute("size", size)
+
         return "lista"
     }
 
@@ -51,7 +57,7 @@ class ContactoController(private val service: ContactoService) {
     fun guardar(
         @Valid @ModelAttribute("contacto") contacto: Contacto,
         result: BindingResult,
-        @RequestParam(required = false) foto: MultipartFile?, // ✅ CLAVE: ya no es obligatoria
+        @RequestParam(required = false) foto: MultipartFile?, // opcional
         model: Model
     ): String {
         if (result.hasErrors()) {

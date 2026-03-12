@@ -1,119 +1,61 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title th:text="${contacto.id != null} ? 'Editar contacto' : 'Nuevo contacto'">Nuevo contacto</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-    /* Estilos dentro del <style> */
-    :root{
-      --bg:#f8fafc;
-      --card:#ffffff;
-      --ink:#0f172a;
-      --muted:#64748b;
-      --line:#e2e8f0;
-      --radius:16px;
-    }
-    body{ background:var(--bg); color:var(--ink); }
-    .shell{ max-width:900px; margin:40px auto; padding:0 16px; }
-    .panel{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:0 18px 40px rgba(15,23,42,.06); overflow:hidden; }
-    .panel-header{ padding:22px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; gap:16px; align-items:center; }
-    .panel-body{ padding:22px; }
-    .actions{ display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap; margin-top:22px; }
-  </style>
 </head>
 <body>
-  <div class="shell">
-    <div class="panel">
-      <div class="panel-header">
-        <div>
-          <h1 th:text="${contacto.id != null} ? 'Editar contacto' : 'Nuevo contacto'">Nuevo contacto</h1>
-          <p>El formulario funciona con y sin JavaScript. Con JavaScript activo usa fetch API.</p>
-        </div>
-        <a class="btn btn-outline-dark" th:href="@{/Home/Lista}">Ver lista</a>
+  <div class="container">
+    <h1 th:text="${contacto.id != null} ? 'Editar contacto' : 'Nuevo contacto'">Nuevo contacto</h1>
+    <form th:action="@{/Home/Guardar}" th:object="${contacto}" method="post" enctype="multipart/form-data">
+      <input type="hidden" th:field="*{id}">
+      
+      <!-- Nombre -->
+      <div class="form-group">
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" th:field="*{nombre}" class="form-control" required>
       </div>
-      <div class="panel-body">
-        <form id="contactoForm" th:action="@{/Home/Guardar}" method="post" enctype="multipart/form-data" th:object="${contacto}">
-          <input type="hidden" th:field="*{id}" />
-          <div class="row g-3">
-            <!-- Campos del formulario -->
-            <div class="col-md-6">
-              <label class="form-label" for="nombre">Nombre</label>
-              <input id="nombre" class="form-control" th:field="*{nombre}" maxlength="80" pattern="^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' -]+$" required>
-              <div class="text-danger help-error" data-error="nombre" th:errors="*{nombre}"></div>
-            </div>
-            <!-- Agregar otros campos aquí -->
-          </div>
-          <div class="actions">
-            <a class="btn btn-outline-secondary" th:href="@{/Home/Lista}">Cancelar</a>
-            <button id="btnGuardar" class="btn btn-dark" type="submit">Guardar</button>
-          </div>
-        </form>
+
+      <!-- Apellidos -->
+      <div class="form-group">
+        <label for="apellidos">Apellidos</label>
+        <input type="text" id="apellidos" th:field="*{apellidos}" class="form-control" required>
       </div>
-    </div>
+
+      <!-- Correo -->
+      <div class="form-group">
+        <label for="correo">Correo electrónico</label>
+        <input type="email" id="correo" th:field="*{correo}" class="form-control" required>
+      </div>
+
+      <!-- Teléfono -->
+      <div class="form-group">
+        <label for="telefono">Teléfono</label>
+        <input type="tel" id="telefono" th:field="*{telefono}" class="form-control" required>
+      </div>
+
+      <!-- Código Postal -->
+      <div class="form-group">
+        <label for="cp">Código Postal</label>
+        <input type="text" id="cp" th:field="*{cp}" class="form-control" required>
+      </div>
+
+      <!-- Fecha de nacimiento -->
+      <div class="form-group">
+        <label for="fechaNacimiento">Fecha de nacimiento</label>
+        <input type="date" id="fechaNacimiento" th:field="*{fechaNacimiento}" class="form-control">
+      </div>
+
+      <!-- Foto de perfil -->
+      <div class="form-group">
+        <label for="foto">Foto de perfil</label>
+        <input type="file" id="foto" name="foto" class="form-control">
+      </div>
+
+      <button type="submit" class="btn btn-primary">Guardar</button>
+    </form>
   </div>
-
-  <script>
-    (() => {
-      const form = document.getElementById('contactoForm');
-      const statusBox = document.getElementById('statusBox');
-      const btnGuardar = document.getElementById('btnGuardar');
-
-      if (!form) return;
-
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        clearErrors();
-        hideStatus();
-
-        if (!form.reportValidity()) return;
-
-        const data = new FormData(form);
-        btnGuardar.disabled = true;
-        form.classList.add('loading');
-        btnGuardar.textContent = 'Guardando...';
-
-        try {
-          const response = await fetch(form.action, {
-            method: 'POST',
-            body: data,
-            headers: {
-              'Accept': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest'
-            }
-          });
-
-          const result = await response.json();
-          if (!response.ok || !result.ok) {
-            showStatus(result.mensaje || 'No fue posible guardar el contacto.', 'danger');
-            return;
-          }
-          showStatus(result.mensaje || 'Guardado correctamente.', 'success');
-          window.location.href = result.redirectUrl || '/Home/Lista';
-        } catch (error) {
-          showStatus('Error de conexión. Verifica el servidor e inténtalo de nuevo.', 'danger');
-        } finally {
-          btnGuardar.disabled = false;
-          form.classList.remove('loading');
-          btnGuardar.textContent = 'Guardar';
-        }
-      });
-
-      function clearErrors() {
-        document.querySelectorAll('[data-error]').forEach(node => node.textContent = '');
-      }
-
-      function showStatus(message, type) {
-        statusBox.className = `alert alert-${type} status-box show`;
-        statusBox.textContent = message;
-      }
-
-      function hideStatus() {
-        statusBox.className = 'alert status-box';
-        statusBox.textContent = '';
-      }
-    })();
-  </script>
 </body>
 </html>

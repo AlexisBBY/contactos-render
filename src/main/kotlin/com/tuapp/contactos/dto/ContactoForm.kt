@@ -1,33 +1,57 @@
-package com.tuapp.contactos.dto
+import org.springframework.http.ResponseEntity
+import org.springframework.stereotype.Controller
+import org.springframework.ui.Model
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
+import org.springframework.web.servlet.mvc.support.RedirectAttributes
+import org.springframework.http.MediaType
+import java.io.IOException
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.validation.BindingResult
+import org.springframework.validation.annotation.Validated
+import javax.validation.Valid
 
-import jakarta.validation.constraints.Email
-import jakarta.validation.constraints.NotBlank
-import jakarta.validation.constraints.Pattern
-import jakarta.validation.constraints.Size
-import org.springframework.format.annotation.DateTimeFormat
-import java.time.LocalDate
+@Controller
+@RequestMapping("/Home")
+class ContactoController @Autowired constructor(val contactoService: ContactoService) {
 
-data class ContactoForm(
-    var id: Long? = null,
-    @field:NotBlank(message = "El nombre es obligatorio.")
-    @field:Size(min = 2, max = 60, message = "El nombre debe tener entre 2 y 60 caracteres.")
-    @field:Pattern(regexp = "^[\\p{L}][\\p{L}\\s'\\-]*$", message = "El nombre solo puede contener letras, espacios, apóstrofo y guion.")
-    var nombre: String = "",
-    @field:NotBlank(message = "Los apellidos son obligatorios.")
-    @field:Size(min = 2, max = 80, message = "Los apellidos deben tener entre 2 y 80 caracteres.")
-    @field:Pattern(regexp = "^[\\p{L}][\\p{L}\\s'\\-]*$", message = "Los apellidos solo pueden contener letras, espacios, apóstrofo y guion.")
-    var apellidos: String = "",
-    @field:NotBlank(message = "El correo es obligatorio.")
-    @field:Email(message = "El correo no es válido.")
-    @field:Size(max = 120, message = "El correo no puede exceder 120 caracteres.")
-    var correo: String = "",
-    @field:NotBlank(message = "El teléfono es obligatorio.")
-    @field:Pattern(regexp = "^[0-9]{10}$", message = "El teléfono debe tener exactamente 10 dígitos.")
-    var telefono: String = "",
-    @field:NotBlank(message = "El código postal es obligatorio.")
-    @field:Pattern(regexp = "^[0-9]{5}$", message = "El código postal debe tener exactamente 5 dígitos.")
-    var cp: String = "",
-    @field:DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-    var fechaNacimiento: LocalDate? = null,
-    var fotoActualBase64: String? = null
-)
+    @GetMapping("/Formulario")
+    fun formulario(@RequestParam(required = false) id: Long?, model: Model): String {
+        val contacto = if (id != null) contactoService.obtener(id) else ContactoForm("", "", "", "", "", null)
+        model.addAttribute("contacto", contacto)
+        return "formulario" // vista de Thymeleaf
+    }
+
+    @PostMapping("/Guardar")
+    fun guardarContacto(
+        @Valid @ModelAttribute contacto: ContactoForm,
+        result: BindingResult,
+        redirectAttributes: RedirectAttributes,
+        @RequestParam("foto") foto: MultipartFile
+    ): String {
+        if (result.hasErrors()) {
+            return "formulario" // vuelve al formulario si hay errores
+        }
+
+        val fotoBase64 = if (!foto.isEmpty) {
+            val bytes = foto.bytes
+            "data:${foto.contentType};base64," + java.util.Base64.getEncoder().encodeToString(bytes)
+        } else {
+            null
+        }
+
+        contacto.fotoBase64 = fotoBase64
+
+        val contactoGuardado = contactoService.guardar(contacto)
+
+        redirectAttributes.addFlashAttribute("mensaje", "Contacto guardado correctamente")
+        return "redirect:/Home/Lista"
+    }
+
+    @GetMapping("/Lista")
+    fun listaContactos(model: Model): String {
+        val contactos = contactoService.obtenerTodos()
+        model.addAttribute("contactos", contactos)
+        return "lista" // vista de Thymeleaf
+    }
+}

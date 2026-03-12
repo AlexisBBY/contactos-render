@@ -24,7 +24,6 @@
 
   <div class="panel">
 
-    <!-- HEADER -->
     <div class="panel-header">
       <div>
         <h5 class="mb-0">Lista de contactos</h5>
@@ -35,25 +34,26 @@
 
     <div class="panel-body">
 
-      <!-- FILTROS -->
+      <div th:if="${ok}" class="alert alert-success" th:text="${ok}"></div>
+
       <form class="row g-2 mb-3" th:action="@{/Home/Lista}" method="get">
 
         <input type="hidden" name="size" th:value="${size}"/>
 
         <div class="col-md-3">
-          <input class="form-control" name="nombre" th:value="${nombre}" placeholder="Nombre">
+          <input class="form-control" name="nombre" th:value="${nombre}" placeholder="Nombre" maxlength="60">
         </div>
 
         <div class="col-md-3">
-          <input class="form-control" name="correo" th:value="${correo}" placeholder="Correo">
+          <input class="form-control" name="correo" th:value="${correo}" placeholder="Correo" maxlength="120">
         </div>
 
         <div class="col-md-2">
-          <input class="form-control" name="telefono" th:value="${telefono}" placeholder="Teléfono">
+          <input class="form-control" name="telefono" th:value="${telefono}" placeholder="Teléfono" maxlength="10">
         </div>
 
         <div class="col-md-2">
-          <input class="form-control" name="cp" th:value="${cp}" placeholder="C.P.">
+          <input class="form-control" name="cp" th:value="${cp}" placeholder="C.P." maxlength="5">
         </div>
 
         <div class="col-md-2">
@@ -66,7 +66,6 @@
         </div>
       </form>
 
-      <!-- TABLA -->
       <div class="table-responsive">
         <table class="table table-hover align-middle">
           <thead class="table-light">
@@ -84,19 +83,18 @@
 
           <tbody>
 
-          <!-- SIN DATOS -->
           <tr th:if="${contactos.totalElements == 0}">
             <td colspan="8" class="text-center py-4 text-muted">
               No hay contactos registrados.
             </td>
           </tr>
 
-          <!-- CON DATOS -->
           <tr th:each="c : ${contactos.content}">
             <td>
               <img th:if="${c.fotoBase64 != null}"
                    th:src="'data:image/*;base64,' + ${c.fotoBase64}"
-                   class="avatar"/>
+                   class="avatar"
+                   alt="Foto"/>
               <span th:if="${c.fotoBase64 == null}" class="text-muted">—</span>
             </td>
 
@@ -117,7 +115,7 @@
                     method="post"
                     style="display:inline;"
                     onsubmit="return confirm('¿Seguro que deseas eliminar este contacto?');">
-                <button class="btn btn-sm btn-outline-danger">Eliminar</button>
+                <button class="btn btn-sm btn-outline-danger" type="submit">Eliminar</button>
               </form>
             </td>
           </tr>
@@ -128,7 +126,6 @@
 
     </div>
 
-    <!-- PAGINACIÓN -->
     <div class="panel-footer">
 
       <div class="meta">
@@ -140,7 +137,6 @@
       <nav th:if="${contactos.totalPages > 1}">
         <ul class="pagination mb-0">
 
-          <!-- PRIMERO -->
           <li class="page-item" th:classappend="${contactos.first} ? 'disabled'">
             <a class="page-link"
                th:href="@{/Home/Lista(page=0,size=${size},nombre=${nombre},correo=${correo},telefono=${telefono},cp=${cp},fecha=${fecha})}">
@@ -148,7 +144,6 @@
             </a>
           </li>
 
-          <!-- ANTERIOR -->
           <li class="page-item" th:classappend="${contactos.first} ? 'disabled'">
             <a class="page-link"
                th:href="@{/Home/Lista(page=${contactos.number - 1},size=${size},nombre=${nombre},correo=${correo},telefono=${telefono},cp=${cp},fecha=${fecha})}">
@@ -156,7 +151,6 @@
             </a>
           </li>
 
-          <!-- NÚMEROS -->
           <li class="page-item"
               th:each="i : ${#numbers.sequence(0, contactos.totalPages - 1)}"
               th:classappend="${i == contactos.number} ? 'active'">
@@ -167,7 +161,6 @@
             </a>
           </li>
 
-          <!-- SIGUIENTE -->
           <li class="page-item" th:classappend="${contactos.last} ? 'disabled'">
             <a class="page-link"
                th:href="@{/Home/Lista(page=${contactos.number + 1},size=${size},nombre=${nombre},correo=${correo},telefono=${telefono},cp=${cp},fecha=${fecha})}">
@@ -175,7 +168,6 @@
             </a>
           </li>
 
-          <!-- ÚLTIMO -->
           <li class="page-item" th:classappend="${contactos.last} ? 'disabled'">
             <a class="page-link"
                th:href="@{/Home/Lista(page=${contactos.totalPages - 1},size=${size},nombre=${nombre},correo=${correo},telefono=${telefono},cp=${cp},fecha=${fecha})}">

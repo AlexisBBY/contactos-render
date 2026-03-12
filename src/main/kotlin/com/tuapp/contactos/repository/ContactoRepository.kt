@@ -28,4 +28,8 @@ interface ContactoRepository : JpaRepository<Contacto, Long> {
         @Param("fecha") fecha: LocalDate?,
         pageable: Pageable
     ): Page<Contacto>
+
+    fun existsByCorreoIgnoreCase(correo: String): Boolean
+
+    fun existsByCorreoIgnoreCaseAndIdNot(correo: String, id: Long): Boolean
 }
